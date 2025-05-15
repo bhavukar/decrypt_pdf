@@ -22,6 +22,14 @@ class MockDecryptPdfPlatform
   }) {
     return Future.value('mock_decrypted_path');
   }
+
+  @override
+  Future<String?> getPdfAsBase64({
+    required String filePath,
+    required String password,
+  }) {
+    return Future.value('mock_base64_string');
+  }
 }
 
 void main() {

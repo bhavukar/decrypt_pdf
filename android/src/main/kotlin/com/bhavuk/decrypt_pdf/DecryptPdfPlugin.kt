@@ -12,6 +12,10 @@ import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.io.File
 import java.io.IOException
 import android.util.Log
+import android.util.Base64
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
+
 
 /** DecryptPdfPlugin */
 class DecryptPdfPlugin: FlutterPlugin, MethodCallHandler {
@@ -108,6 +112,51 @@ class DecryptPdfPlugin: FlutterPlugin, MethodCallHandler {
           }
         }.start()
       }
+      "getPdfAsBase64" -> {
+        val filePath = call.argument<String>("filePath")
+        val password = call.argument<String>("password")
+
+        if (filePath == null || password == null) {
+          result.error("INVALID_ARGUMENTS", "File path or password is null", null)
+          return
+        }
+
+        Thread {
+          try {
+            val file = File(filePath)
+            if (!file.exists()) {
+              result.error("FILE_NOT_FOUND", "PDF file not found", null)
+              return@Thread
+            }
+
+            // Load and decrypt document
+            val document = PDDocument.load(file, password)
+            document.isAllSecurityToBeRemoved = true
+
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            document.save(byteArrayOutputStream)
+            document.close()
+
+            val base64 = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP)
+            result.success(base64)
+
+          } catch (e: InvalidPasswordException) {
+            Log.e(TAG, "getPdfAsBase64: Invalid password", e)
+            result.error(ERROR_INVALID_PASSWORD, "Incorrect password for PDF", null)
+          } catch (e: IOException) {
+            Log.e(TAG, "getPdfAsBase64: IO error", e)
+            result.error(ERROR_IO, "IO error: ${e.message}", null)
+          } catch (e: OutOfMemoryError) {
+            Log.e(TAG, "getPdfAsBase64: Out of memory", e)
+            result.error(ERROR_OUT_OF_MEMORY, "PDF too large to convert to Base64", null)
+          } catch (e: Exception) {
+            Log.e(TAG, "getPdfAsBase64: Unexpected error", e)
+            result.error(ERROR_UNKNOWN, "Unexpected error: ${e.message}", null)
+          }
+        }.start()
+      }
+
+
       "isPdfProtected" -> {
         val filePath = call.argument<String>("filePath")
         if (filePath == null) {

@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   decrypt_pdf
+  pdfx
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

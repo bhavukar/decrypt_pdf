@@ -1,7 +1,7 @@
 name: decrypt_pdf
-description: "A new Flutter project."
+description: "A Flutter plugin to decrypt password-protected PDF files on Android and iOS."
 version: 0.0.1
-homepage:
+homepage: https://github.com/bhavukar/decrypt_pdf.git
 
 environment:
   sdk: ^3.7.2
@@ -13,9 +13,6 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   web: ^1.0.0
-  win32: ^5.13.0
-  ffi: ^2.1.4
-  path: ^1.9.1
   plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
@@ -55,6 +52,8 @@ flutter:
         pluginClass: DecryptPdfWeb
         fileName: decrypt_pdf_web.dart
 
+  assets:
+    - web/pdf_interop.js
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

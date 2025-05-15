@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:decrypt_pdf/decrypt_pdf.dart'; // Import your plugin
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:pdfx/pdfx.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,37 +17,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-  final _decryptPdfPlugin = DecryptPdf();
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await DecryptPdf.getPlatformVersion() ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -126,9 +94,7 @@ class _HomePageState extends State<HomePage> {
         // or directly use the original path with PDFView if it supports it.
         // For consistency with the plugin's flow, let's still use 'openPdf'.
         // The native side should handle non-protected PDFs gracefully.
-        await _openPdfWithPasswordWithoutProgress(
-          "",
-        ); // Treat as opening with empty password
+        await _openPdfWithPassword(""); // Treat as opening with empty password
       }
     } catch (e) {
       _status = 'Error checking PDF protection: $e';
@@ -177,7 +143,7 @@ class _HomePageState extends State<HomePage> {
               child: const Text('Open'),
               onPressed: () {
                 Navigator.of(context).pop();
-                _openPdfWithPasswordWithoutProgress(_passwordController.text);
+                _openPdfWithPassword(_passwordController.text);
               },
             ),
           ],
@@ -186,7 +152,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _openPdfWithPasswordWithoutProgress(String password) async {
+  Future<void> _openPdfWithPassword(String password) async {
     if (_pickedFilePath == null) {
       setState(() {
         _status = 'No file picked to open.';
@@ -272,24 +238,18 @@ class _HomePageState extends State<HomePage> {
                   _decryptedPdfPath == null &&
                   !_status.contains("PDF is not protected"))
                 ElevatedButton(
-                  child: const Text('Enter Password & Open'),
                   onPressed: _showPasswordDialog,
+                  child: const Text('Enter Password & Open'),
                 ),
               const SizedBox(height: 20),
               if (_decryptedPdfPath != null && !_isLoading)
                 Expanded(
-                  child: PDFView(
-                    filePath: _decryptedPdfPath!,
-                    onError: (error) {
-                      setState(() {
-                        _status = 'Error displaying PDF: $error';
-                      });
-                    },
-                    onPageError: (page, error) {
-                      setState(() {
-                        _status = 'Error on page $page: $error';
-                      });
-                    },
+                  child: PdfView(
+                    controller: PdfController(
+                      document: PdfDocument.openFile(_decryptedPdfPath!),
+                      initialPage: 0,
+                    ),
+                    scrollDirection: Axis.vertical,
                   ),
                 ),
             ],

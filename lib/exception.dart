@@ -1,5 +1,3 @@
-import 'package:flutter/services.dart';
-
 /// Base exception for all PDF-related errors
 class PdfException implements Exception {
   final String? message;
@@ -38,21 +36,4 @@ class PdfUnsupportedEncryptionException extends PdfException {
 class PdfOutOfMemoryException extends PdfException {
   PdfOutOfMemoryException([String? message])
     : super(message ?? 'Not enough memory to process the PDF');
-}
-
-Exception _mapException(PlatformException e) {
-  switch (e.code) {
-    case 'FILE_NOT_FOUND':
-      return PdfNotFoundException(e.message);
-    case 'INVALID_PASSWORD':
-      return PdfInvalidPasswordException(e.message);
-    case 'PDF_CORRUPTED':
-      return PdfCorruptedException(e.message);
-    case 'UNSUPPORTED_ENCRYPTION':
-      return PdfUnsupportedEncryptionException(e.message);
-    case 'OUT_OF_MEMORY':
-      return PdfOutOfMemoryException(e.message);
-    default:
-      return PdfException(e.message ?? 'Unknown error');
-  }
 }
